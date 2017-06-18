@@ -1,6 +1,7 @@
 from discord.ext import commands
 import random
 import os
+import requests
 
 currentQuestion = False
 currentAnswer = False
@@ -43,6 +44,11 @@ async def quiz():
         await bot.say("А теперь вопрос: {}".format(currentQuestion))
     else:
         await bot.say(currentQuestion)
+
+@bot.command()
+async def cat():
+    gif = requests.get('http://thecatapi.com/api/images/get?format=src&type=gif').url
+    await bot.say(gif)
 
 @bot.command()
 async def ask(answer: str):
