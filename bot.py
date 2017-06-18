@@ -1,4 +1,5 @@
 from discord.ext import commands
+import discord
 import random
 import os
 import requests
@@ -62,8 +63,9 @@ async def quiz():
         await bot.say(currentQuestion)
 
 @bot.command()
-async def ask(answer: str):
+async def ask(answer: str, user: discord.User):
     global currentAnswer
+    print(user)
     if answer.lower() == currentAnswer:
         await bot.say('Это правильный ответ!')
         global currentQuestion
