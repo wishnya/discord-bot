@@ -18,6 +18,13 @@ def setQuestion():
     line = text[numLine].rstrip().split('|')
     currentQuestion = line[0]
     currentAnswer = line[1]
+    
+@bot.event
+async def on_ready():
+    print('Logged in as')
+    print(bot.user.name)
+    print(bot.user.id)
+    print('------')
 
 @bot.command()
 async def wiki(article: str):
