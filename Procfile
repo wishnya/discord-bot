@@ -1,1 +1,1 @@
-heroku run python bot.py
+python bot.py
