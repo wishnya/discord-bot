@@ -13,7 +13,7 @@ bot = commands.Bot(command_prefix='!', description=description)
 def setQuestion():
     global currentQuestion
     global currentAnswer
-    file = open(os.path.dirname(os.path.abspath(__file__)) + '/questions.txt', 'r', encoding='utf-8')
+    file = open(os.path.dirname(os.path.abspath(__file__)) + '\questions.txt', 'r', encoding='utf-8')
     text = file.readlines()
     countLines = len(text)
     numLine = random.randrange(countLines)
@@ -63,9 +63,7 @@ async def quiz():
         await bot.say(currentQuestion)
 
 @bot.command()
-async def ask(answer: str, member: discord.Member):
-    x = '{0.name} joined in {0.joined_at}'.format(member)
-    print(x)
+async def ask(answer: str):
     global currentAnswer
     if answer.lower() == currentAnswer:
         await bot.say('Это правильный ответ!')
@@ -74,7 +72,5 @@ async def ask(answer: str, member: discord.Member):
         await bot.say('А теперь новый вопрос: {}'.format(currentQuestion))
     else:
         await bot.say('К сожелению, это неправильный ответ.')
-
-
 
 bot.run('MzI0MjU1MDEzNTk5NzA3MTM2.DCWzsA.W-NXPNw3IQP_7gsWlNRiZ_5ebcg')
