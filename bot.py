@@ -106,4 +106,4 @@ async def on_message(msg):
             await ask(msg)
 
 
-bot.run('MzI1OTk0ODY0ODcxMzQyMDgw.DCgWAg.sK3BtmdTCORlqAZemvitWMPWou4')
+bot.run('MzI0MjU1MDEzNTk5NzA3MTM2.DChAsQ.XnWQTHUNPfe37YIB1-MsxI58fkM')
