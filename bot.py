@@ -28,6 +28,17 @@ async def on_ready():
     print('------')
 
 @bot.command()
+async def list():
+    arr = ', '.join([
+        'cat',
+        'wiki',
+        'python',
+        'quiz',
+        'ask'
+    ])
+    await bot.say(arr)
+
+@bot.command()
 async def cat():
     gif = requests.get('http://thecatapi.com/api/images/get?format=src&type=gif').url
     await bot.say(gif)
