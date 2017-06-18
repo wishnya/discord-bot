@@ -19,13 +19,6 @@ def setQuestion():
     currentQuestion = line[0]
     currentAnswer = line[1]
 
-@bot.event
-async def on_ready():
-    print('Logged in as')
-    print(bot.user.name)
-    print(bot.user.id)
-    print('------')
-
 @bot.command()
 async def wiki(article: str):
     await bot.say('https://ru.wikipedia.org/wiki/{}'.format(article))
