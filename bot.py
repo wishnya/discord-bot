@@ -46,11 +46,6 @@ async def quiz():
         await bot.say(currentQuestion)
 
 @bot.command()
-async def cat():
-    gif = requests.get('http://thecatapi.com/api/images/get?format=src&type=gif').url
-    await bot.say(gif)
-
-@bot.command()
 async def ask(answer: str):
     global currentAnswer
     if answer.lower() == currentAnswer:
