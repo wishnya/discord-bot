@@ -13,7 +13,7 @@ bot = commands.Bot(command_prefix='!', description=description)
 def setQuestion():
     global currentQuestion
     global currentAnswer
-    file = open(os.path.dirname(os.path.abspath(__file__)) + '\questions.txt', 'r', encoding='utf-8')
+    file = open(os.path.dirname(os.path.abspath(__file__)) + '/questions.txt', 'r', encoding='utf-8')
     text = file.readlines()
     countLines = len(text)
     numLine = random.randrange(countLines)
