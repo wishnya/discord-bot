@@ -4,11 +4,72 @@ import random
 import os
 import requests
 
+description = '''Test python bot.'''
+bot = discord.Client()
+
+@bot.event
+async def on_ready():
+    print('UP!')
+
+
+
 currentQuestion = False
 currentAnswer = False
 
-description = '''Test python bot.'''
-bot = commands.Bot(command_prefix='!', description=description)
+arr = ', '.join([
+    'cat',
+    'wiki',
+    'python',
+    'quiz',
+    'ask'
+])
+
+async def cat(msg):
+    gif = requests.get('http://thecatapi.com/api/images/get').url
+    await bot.send_message(msg.channel, gif)
+
+async def search(msg, where):
+    places = {
+        'python': 'https://docs.python.org/3/search.html?q={}',
+        'wiki': 'https://wikipedia.org/wiki/{}'
+    }
+    quest = msg.content.split(' ')
+    quest.pop(0)
+    if len(quest) == 1:
+        quest = places[where].format(quest[0].lower())
+        await bot.send_message(msg.channel, quest)
+    elif len(quest) > 1:
+        for i in quest:
+            i = places[where].format(i.lower())
+            await bot.send_message(msg.channel, i)
+    else:
+        quest = 'Вы не указали искомое.'
+        await bot.send_message(msg.channel, quest)
+
+async def quiz(msg):
+    if not currentQuestion:
+        setQuestion()
+        await bot.send_message(msg.channel, "А теперь вопрос: {}".format(currentQuestion))
+    else:
+        await bot.send_message(msg.channel, currentQuestion)
+
+async def ask(msg):
+    answer = msg.content.split(' ')
+    answer.pop(0)
+    if len(answer) > 1:
+        await bot.send_message(msg.channel, 'Ответ состоит из одного слова.')
+    elif not len(answer):
+        await bot.send_message(msg.channel, '{}, Вы не указали ответ.'.format(msg.author.name))
+    else:
+        global currentAnswer
+        if answer[0].lower() == currentAnswer:
+            await bot.send_message(msg.channel, 'Это правильный ответ!')
+            # global currentQuestion
+            setQuestion()
+            await bot.send_message(msg.channel, 'А теперь новый вопрос: {}'.format(currentQuestion))
+        else:
+            await bot.send_message(msg.channel, 'К сожелению, это неправильный ответ.')
+
 
 def setQuestion():
     global currentQuestion
@@ -20,54 +81,29 @@ def setQuestion():
     line = text[numLine].rstrip().split('|')
     currentQuestion = line[0]
     currentAnswer = line[1]
-    
+
+
+
 @bot.event
-async def on_ready():
-    print('UP!')
+async def on_message(msg):
+    if bot.user.id != msg.author.id:
+        if msg.content.startswith('!list'):
+            await bot.send_message(msg.channel, arr)
 
-@bot.command()
-async def list():
-    arr = ', '.join([
-        'cat',
-        'wiki',
-        'python',
-        'quiz',
-        'ask'
-    ])
-    await bot.say(arr)
+        elif msg.content.startswith('!cat'):
+            await cat(msg)
 
-@bot.command()
-async def cat():
-    gif = requests.get('http://thecatapi.com/api/images/get?format=src&type=gif').url
-    await bot.say(gif)
+        elif msg.content.startswith('!wiki'):
+            await search(msg, 'wiki')
 
-@bot.command()
-async def wiki(article: str):
-    await bot.say('https://ru.wikipedia.org/wiki/{}'.format(article))
+        elif msg.content.startswith('!python'):
+            await search(msg, 'python')
 
-@bot.command()
-async def python(version: int, tag: str):
-    await bot.say('https://docs.python.org/{0}/search.html?q={1}'.format(version, tag))
+        elif msg.content.startswith('!quiz'):
+            await quiz(msg)
 
-@bot.command()
-async def quiz():
-    global currentQuestion
-    global currentAnswer
-    if not currentQuestion:
-        setQuestion()
-        await bot.say("А теперь вопрос: {}".format(currentQuestion))
-    else:
-        await bot.say(currentQuestion)
+        elif msg.content.startswith('!ask'):
+            await ask(msg)
 
-@bot.command()
-async def ask(answer: str):
-    global currentAnswer
-    if answer.lower() == currentAnswer:
-        await bot.say('Это правильный ответ!')
-        global currentQuestion
-        setQuestion()
-        await bot.say('А теперь новый вопрос: {}'.format(currentQuestion))
-    else:
-        await bot.say('К сожелению, это неправильный ответ.')
 
-bot.run('MzI0MjU1MDEzNTk5NzA3MTM2.DCWzsA.W-NXPNw3IQP_7gsWlNRiZ_5ebcg')
+bot.run('MzI1OTk0ODY0ODcxMzQyMDgw.DCgWAg.sK3BtmdTCORlqAZemvitWMPWou4')
