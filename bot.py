@@ -63,7 +63,7 @@ async def quiz():
         await bot.say(currentQuestion)
 
 @bot.command()
-async def ask(answer: str, usr: discord.User):
+async def ask(answer: str, usr: discord.Member):
     global currentAnswer
     print(usr)
     if answer.lower() == currentAnswer:
