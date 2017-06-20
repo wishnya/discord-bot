@@ -1,21 +1,32 @@
-from discord.ext import commands
 import discord
 import random
 import os
 import requests
+import sqlite3
 
-description = '''Test python bot.'''
 bot = discord.Client()
 
 @bot.event
 async def on_ready():
     print('UP!')
 
+# Открытие/создание базы данных, добавдение таблиц, если их нет.
+dbase = sqlite3.connect('discord.db')
+dbase.execute('CREATE TABLE IF NOT EXISTS quiz ('
+              'question TEXT,'
+              'ask TEXT)')
 
+dbase.execute('CREATE TABLE IF NOT EXISTS scopes ('
+              'id INT,'
+              'scope INT DEFAULT 0)')
 
+cursor = dbase.cursor()
+
+# Перменные, содержащие вопрос и ответ.
 currentQuestion = False
 currentAnswer = False
 
+# Массив с доступными командами
 arr = ', '.join([
     'cat',
     'wiki',
@@ -24,10 +35,12 @@ arr = ', '.join([
     'ask'
 ])
 
+# Функция, отправляющая случайное изображение кошек
 async def cat(msg):
     gif = requests.get('http://thecatapi.com/api/images/get').url
     await bot.send_message(msg.channel, gif)
 
+# Функция поиска по сайтам.
 async def search(msg, where):
     places = {
         'python': 'https://docs.python.org/3/search.html?q={}',
@@ -46,6 +59,7 @@ async def search(msg, where):
         quest = 'Вы не указали искомое.'
         await bot.send_message(msg.channel, quest)
 
+# Функция, посылающая вопрос в чат
 async def quiz(msg):
     if not currentQuestion:
         setQuestion()
@@ -53,25 +67,62 @@ async def quiz(msg):
     else:
         await bot.send_message(msg.channel, currentQuestion)
 
+# Фукция принимающая ответ на текущий вопрос
 async def ask(msg):
     answer = msg.content.split(' ')
     answer.pop(0)
     if len(answer) > 1:
-        await bot.send_message(msg.channel, 'Ответ состоит из одного слова.')
+        await bot.send_message(msg.channel, '{}, ответ состоит из одного слова.'.format(msg.author.mention))
     elif not len(answer):
-        await bot.send_message(msg.channel, '{}, Вы не указали ответ.'.format(msg.author.name))
+        await bot.send_message(msg.channel, '{}, Вы не указали ответ.'.format(msg.author.mention))
     else:
         global currentAnswer
         if answer[0].lower() == currentAnswer:
-            await bot.send_message(msg.channel, 'Это правильный ответ!')
-            # global currentQuestion
+            usrScope = 0
+            id = msg.author.id
+            cursor = dbase.cursor()
+            cursor.execute('SELECT scope FROM scopes WHERE id = ?', [id])
+            scope = cursor.fetchone()
+            if scope is None:
+                usrScope = 1
+                cursor.execute('INSERT INTO scopes (id) VALUES(?)', [id])
+            else:
+                usrScope = scope[0] + 1
+                cursor.execute('UPDATE scopes SET scope = ? WHERE id = ?', (usrScope, id))
+            dbase.commit()
+            cursor.close()
             setQuestion()
+            await bot.send_message(msg.channel, '{} правильно ответил(а) на вопрос и получаете 1 балл.\n'
+                                                'Теперь количество ваших баллов равняется {}.'.format(msg.author.mention, usrScope))
             await bot.send_message(msg.channel, 'А теперь новый вопрос: {}'.format(currentQuestion))
         else:
-            await bot.send_message(msg.channel, 'К сожелению, это неправильный ответ.')
+            await bot.send_message(msg.channel, '{}, к сожелению это неправильный ответ.'.format(msg.author.mention))
+
+# Список из 10 лидеров викторины
+async def top(msg):
+    cursor = dbase.cursor()
+    cursor.execute('SELECT id, scope FROM scopes ORDER BY scope DESC LIMIT 30')
+    leaders = cursor.fetchall()
+    count = 0
+    for leader in leaders:
+        if count != 10:
+            nick = discord.utils.get(msg.server.members, id=str(leader[0]))
+            scope = leader[1]
+            if nick is not None:
+                count = count + 1
+                await bot.send_message(msg.channel, '{}: {}'.format(nick.name, scope))
+    cursor.close()
 
 
-def setQuestion():
+
+# Функция, которая выбирает случайный вопрос и ответ из текстового файла, а затем записывает выбранное
+# в базу данных и переменные для вопроса и ответа.
+def setQuestion(qst='update'):
+    cursor = dbase.cursor()
+    questions = {
+        'insert': 'INSERT INTO quiz(question, ask) VALUES(?, ?)',
+        'update': 'UPDATE quiz SET question = ?, ask = ? WHERE question = ?'
+    }
     global currentQuestion
     global currentAnswer
     file = open(os.path.dirname(os.path.abspath(__file__)) + os.sep + 'questions.txt', 'r', encoding='utf-8')
@@ -79,11 +130,15 @@ def setQuestion():
     countLines = len(text)
     numLine = random.randrange(countLines)
     line = text[numLine].rstrip().split('|')
+    if qst == 'update':
+        line.append(currentQuestion)
+    cursor.execute(questions[qst], line)
     currentQuestion = line[0]
     currentAnswer = line[1]
+    dbase.commit()
+    cursor.close()
 
-
-
+# Функция обработки команд в чате.
 @bot.event
 async def on_message(msg):
     if bot.user.id != msg.author.id:
@@ -100,10 +155,28 @@ async def on_message(msg):
             await search(msg, 'python')
 
         elif msg.content.startswith('!quiz'):
-            await quiz(msg)
+            await bot.send_message(msg.channel, currentQuestion)
 
         elif msg.content.startswith('!ask'):
             await ask(msg)
 
+        elif msg.content.startswith('!top'):
+            await top(msg)
 
-bot.run('MzI0MjU1MDEzNTk5NzA3MTM2.DChAsQ.XnWQTHUNPfe37YIB1-MsxI58fkM')
+
+if __name__ == '__main__':
+    # Отправка запроса для получения вопроса и ответа в базе данных. Если они(вопрос и ответ) есть,
+    # то записываются в соотвествующие переменные, если нет - запускается функция setQuestion,
+    # берущая случайный вопрос и ответ из текстового файл и добавляет их в базу
+    cursor.execute('SELECT question, ask FROM quiz')
+    quizData = cursor.fetchall()
+    if quizData:
+        currentQuestion = quizData[0][0]
+        currentAnswer = quizData[0][1]
+        cursor.close()
+    else:
+        setQuestion('insert')
+    # Запуск бота
+    bot.run('MzI0MjU1MDEzNTk5NzA3MTM2.DCrbjw.Y5bsLGA8K0qRtw_cB6U3Xh_KJmE')
+
+
