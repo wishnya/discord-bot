@@ -121,6 +121,7 @@ async def ask(msg):
 # Список из 10 лидеров викторины
 
 async def top(msg):
+    print('top')
     cursor = dbase.cursor()
     cursor.execute('SELECT id, scope FROM scopes ORDER BY scope DESC LIMIT 30')
     leaders = cursor.fetchall()
