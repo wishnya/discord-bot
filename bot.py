@@ -153,7 +153,7 @@ async def top(msg):
                 if tmp is not None:
                     nick.append(tmp.name)
             scope = key
-            print('nick')
+            print(nick)
             if nick:
                 nick = ', '.join(nick)
                 await bot.send_message(msg.channel, '{} {}: {} балл(ов).'.format(places[count], nick, scope))
