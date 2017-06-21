@@ -121,7 +121,6 @@ async def ask(msg):
 # Список из 10 лидеров викторины
 
 async def top(msg):
-    print('top')
     cursor = dbase.cursor()
     cursor.execute('SELECT id, scope FROM scopes ORDER BY scope DESC LIMIT 30')
     leaders = cursor.fetchall()
@@ -155,6 +154,7 @@ async def top(msg):
             scope = key
             if nick:
                 nick = ', '.join(nick)
+                print(nick)
                 await bot.send_message(msg.channel, '{} {}: {} балл(ов).'.format(places[count], nick, scope))
                 count += 1
     cursor.close()
