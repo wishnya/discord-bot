@@ -115,10 +115,11 @@ async def ask(msg):
                 msg.author.mention, usrScope))
             await bot.send_message(msg.channel, 'А теперь новый вопрос: {}'.format(currentQuestion))
         else:
-            await bot.send_message(msg.channel, '{}, к сожелению это неправильный ответ.'.format(msg.author.mention))
+            await bot.send_message(msg.channel, '{}, к сожалению это неправильный ответ.'.format(msg.author.mention))
 
 
 # Список из 10 лидеров викторины
+
 async def top(msg):
     cursor = dbase.cursor()
     cursor.execute('SELECT id, scope FROM scopes ORDER BY scope DESC LIMIT 30')
@@ -147,12 +148,13 @@ async def top(msg):
                     if tmp is not None:
                         nick.append(tmp.name)
             else:
-                tmp = discord.utils.get(msg.server.members, id=result[key])
+                tmp = discord.utils.get(msg.server.members, id=result[key][0])
                 if tmp is not None:
                     nick.append(tmp.name)
             scope = key
             if nick:
-                await bot.send_message(msg.channel, '{} {}: {} балл(ов).'.format(places[count], *nick, scope))
+                nick = ', '.join(nick)
+                await bot.send_message(msg.channel, '{} {}: {} балл(ов).'.format(places[count], nick, scope))
                 count += 1
     cursor.close()
 
