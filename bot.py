@@ -140,6 +140,7 @@ async def top(msg):
 
 
     count = 0
+
     for key in result:
         if count != len(result):
             nick = []
