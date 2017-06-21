@@ -137,7 +137,8 @@ async def top(msg):
             else:
                 result[scope] = [usr]
         count += 1
-    print('top1')
+
+
     count = 0
     for key in result:
         if count != len(result):
@@ -152,11 +153,11 @@ async def top(msg):
                 if tmp is not None:
                     nick.append(tmp.name)
             scope = key
+            print('nick')
             if nick:
                 nick = ', '.join(nick)
                 await bot.send_message(msg.channel, '{} {}: {} балл(ов).'.format(places[count], nick, scope))
                 count += 1
-    print('top2')
     cursor.close()
 
 
