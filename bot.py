@@ -4,7 +4,7 @@ import os
 import requests
 import sqlite3
 import psycopg2
-import urlparse
+import urllib.parse as urlparse
 
 bot = discord.Client()
 
