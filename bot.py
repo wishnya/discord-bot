@@ -7,7 +7,6 @@ import urllib.parse as urlparse
 
 bot = discord.Client()
 
-
 @bot.event
 async def on_ready():
     print('UP!')
@@ -35,7 +34,7 @@ cursor.execute('CREATE TABLE IF NOT EXISTS scopes ('
 
 
 
-# Перменные, содержащие вопрос и ответ.
+# Переменные, содержащие вопрос и ответ.
 currentQuestion = False
 currentAnswer = False
 
@@ -92,7 +91,6 @@ async def quiz(msg):
         await bot.send_message(msg.channel, "А теперь вопрос: {}".format(currentQuestion))
     else:
         await bot.send_message(msg.channel, currentQuestion)
-
 
 # Фукция принимающая ответ на текущий вопрос
 async def ask(msg):
@@ -173,7 +171,7 @@ async def top(msg):
 def setQuestion(qst='update'):
     cursor = dbase.cursor()
     questions = {
-        'insert': 'INSERT INTO quiz(question, ask) VALUES(%s)',
+        'insert': 'INSERT INTO quiz(question, ask) VALUES(%s, %s)',
         'update': 'UPDATE quiz SET question = %s, ask = %s WHERE question = %s'
     }
     global currentQuestion
@@ -185,8 +183,8 @@ def setQuestion(qst='update'):
     line = text[numLine].rstrip().split('|')
     if qst == 'update':
         line.append(currentQuestion)
-    print(line)
-    cursor.execute(questions[qst], line)
+    print('INSERT INTO quiz(question, ask) VALUES(%s, %s)', line)
+    cursor.execute(questions[qst], (line,))
     currentQuestion = line[0]
     currentAnswer = line[1]
     dbase.commit()
