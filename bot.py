@@ -9,7 +9,7 @@ bot = discord.Client()
 
 @bot.event
 async def on_ready():
-    print('Server UP!')
+    print('UP!')
 
 
 # Открытие/создание базы данных, добавдение таблиц, если их нет.
