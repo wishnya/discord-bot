@@ -183,8 +183,7 @@ def setQuestion(qst='update'):
     line = text[numLine].rstrip().split('|')
     if qst == 'update':
         line.append(currentQuestion)
-    print('INSERT INTO quiz(question, ask) VALUES(%s, %s)', line)
-    cursor.execute(questions[qst].format(*list))
+    cursor.execute(questions[qst].format(*line))
     currentQuestion = line[0]
     currentAnswer = line[1]
     dbase.commit()
