@@ -46,6 +46,8 @@ commands = ', '.join([
     'quiz',
     'ask'
 ])
+
+# Массив с эможи в качестве обозначения места в викторине.
 places = [
     ':first_place:',
     ':second_place:',
@@ -111,7 +113,6 @@ async def ask(msg):
             if scope is None:
                 usrScope = 1
                 cursor.execute('INSERT INTO scopes (id, scope) VALUES({}, {})'.format(id, usrScope))
-                print('UPDATE scopes SET scope = {} WHERE id = {}'.format(usrScope, id))
             else:
                 usrScope = scope[0] + 1
                 cursor.execute('UPDATE scopes SET scope = {} WHERE id = {}'.format(usrScope, id))
@@ -165,7 +166,6 @@ async def top(msg):
                 await bot.send_message(msg.channel, '{} {}: {} балл(ов).'.format(places[count], nick, scope))
                 count += 1
     cursor.close()
-
 
 # Функция, которая выбирает случайный вопрос и ответ из текстового файла, а затем записывает выбранное
 # в базу данных и переменные для вопроса и ответа.
