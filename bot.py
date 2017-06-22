@@ -173,7 +173,7 @@ async def top(msg):
 def setQuestion(qst='update'):
     cursor = dbase.cursor()
     questions = {
-        'insert': 'INSERT INTO quiz(question, ask) VALUES(%s, %s)',
+        'insert': 'INSERT INTO quiz(question, ask) VALUES(%s)',
         'update': 'UPDATE quiz SET question = %s, ask = %s WHERE question = %s'
     }
     global currentQuestion
