@@ -172,7 +172,7 @@ def setQuestion(qst='update'):
     cursor = dbase.cursor()
     questions = {
         'insert': '''INSERT INTO quiz (question, ask) VALUES('{}', '{}')''',
-        'update': 'UPDATE quiz SET question = "{}", ask = "{}" WHERE question = "{}"'
+        'update': '''UPDATE quiz SET question = '{}', ask = '{}' WHERE question = '{}' '''
     }
     global currentQuestion
     global currentAnswer
@@ -183,7 +183,6 @@ def setQuestion(qst='update'):
     line = text[numLine].rstrip().split('|')
     if qst == 'update':
         line.append(currentQuestion)
-    print(questions[qst].format(*line))
     cursor.execute(questions[qst].format(*line))
     currentQuestion = line[0]
     currentAnswer = line[1]
