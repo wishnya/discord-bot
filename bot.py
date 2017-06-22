@@ -3,6 +3,8 @@ import random
 import os
 import requests
 import sqlite3
+import psycopg2
+import urlparse
 
 bot = discord.Client()
 
@@ -13,16 +15,25 @@ async def on_ready():
 
 
 # Открытие/создание базы данных, добавдение таблиц, если их нет.
-dbase = sqlite3.connect('discord.db')
-dbase.execute('CREATE TABLE IF NOT EXISTS quiz ('
+urlparse.uses_netloc.append("postgres")
+url = urlparse.urlparse(os.environ["DATABASE_URL"])
+dbase = psycopg2.connect(
+    database=url.path[1:],
+    user=url.username,
+    password=url.password,
+    host=url.hostname,
+    port=url.port
+)
+cursor = dbase.cursor()
+cursor.execute('CREATE TABLE IF NOT EXISTS quiz ('
               'question TEXT,'
               'ask TEXT)')
 
-dbase.execute('CREATE TABLE IF NOT EXISTS scopes ('
+cursor.execute('CREATE TABLE IF NOT EXISTS scopes ('
               'id INT,'
               'scope INT DEFAULT 0)')
 
-cursor = dbase.cursor()
+
 
 # Перменные, содержащие вопрос и ответ.
 currentQuestion = False
