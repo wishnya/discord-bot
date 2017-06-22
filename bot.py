@@ -171,8 +171,8 @@ async def top(msg):
 def setQuestion(qst='update'):
     cursor = dbase.cursor()
     questions = {
-        'insert': 'INSERT INTO quiz(question, ask) VALUES(%s, %s)',
-        'update': 'UPDATE quiz SET question = %s, ask = %s WHERE question = %s'
+        'insert': 'INSERT INTO quiz(question, ask) VALUES({}, {})',
+        'update': 'UPDATE quiz SET question = {}, ask = {} WHERE question = {}'
     }
     global currentQuestion
     global currentAnswer
@@ -183,8 +183,8 @@ def setQuestion(qst='update'):
     line = text[numLine].rstrip().split('|')
     if qst == 'update':
         line.append(currentQuestion)
-    print(line)
-    cursor.execute(questions[qst], (line,))
+    print('INSERT INTO quiz(question, ask) VALUES(%s, %s)', line)
+    cursor.execute(questions[qst].format(*list))
     currentQuestion = line[0]
     currentAnswer = line[1]
     dbase.commit()
