@@ -2,8 +2,7 @@ import discord
 import random
 import os
 import requests
-import psycopg2
-import urllib.parse as urlparse
+import sqlite3
 
 bot = discord.Client()
 
@@ -14,27 +13,16 @@ async def on_ready():
 
 
 # Открытие/создание базы данных, добавдение таблиц, если их нет.
-urlparse.uses_netloc.append("postgres")
-url = urlparse.urlparse(os.environ["DATABASE_URL"])
-dbase = psycopg2.connect(
-    database=url.path[1:],
-    user=url.username,
-    password=url.password,
-    host=url.hostname,
-    port=url.port
-)
-cursor = dbase.cursor()
-cursor.execute('CREATE TABLE IF NOT EXISTS quiz ('
+dbase = sqlite3.connect('discord.db')
+dbase.execute('CREATE TABLE IF NOT EXISTS quiz ('
               'question TEXT,'
               'ask TEXT)')
 
-
-
-cursor.execute('CREATE TABLE IF NOT EXISTS scopes ('
+dbase.execute('CREATE TABLE IF NOT EXISTS scopes ('
               'id INT,'
               'scope INT DEFAULT 0)')
 
-
+cursor = dbase.cursor()
 
 # Перменные, содержащие вопрос и ответ.
 currentQuestion = False
@@ -178,8 +166,8 @@ async def top(msg):
 def setQuestion(qst='update'):
     cursor = dbase.cursor()
     questions = {
-        'insert': 'INSERT INTO quiz(question, ask) VALUES(%s, %s)',
-        'update': 'UPDATE quiz SET question = %s, ask = %s WHERE question = %s'
+        'insert': 'INSERT INTO quiz(question, ask) VALUES(?, ?)',
+        'update': 'UPDATE quiz SET question = ?, ask = ? WHERE question = ?'
     }
     global currentQuestion
     global currentAnswer
@@ -190,7 +178,7 @@ def setQuestion(qst='update'):
     line = text[numLine].rstrip().split('|')
     if qst == 'update':
         line.append(currentQuestion)
-    cursor.executemany(questions[qst], *line)
+    cursor.execute(questions[qst], line)
     currentQuestion = line[0]
     currentAnswer = line[1]
     dbase.commit()
