@@ -186,7 +186,7 @@ def setQuestion(qst='update'):
     if qst == 'update':
         line.append(currentQuestion)
     print(line)
-    cursor.executemany(questions[qst], line)
+    cursor.execute(questions[qst], line)
     currentQuestion = line[0]
     currentAnswer = line[1]
     dbase.commit()
