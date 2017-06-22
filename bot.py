@@ -113,6 +113,7 @@ async def ask(msg):
                 cursor.execute('INSERT INTO scopes (id, scope) VALUES({}, {})'.format(id, usrScope))
             else:
                 usrScope = scope[0] + 1
+                print('UPDATE scopes SET scope = {} WHERE id = {}'.format(usrScope, id))
                 cursor.execute('UPDATE scopes SET scope = {} WHERE id = {}'.format(usrScope, id))
             dbase.commit()
             cursor.close()
