@@ -29,6 +29,8 @@ cursor.execute('CREATE TABLE IF NOT EXISTS quiz ('
               'question TEXT,'
               'ask TEXT)')
 
+
+
 cursor.execute('CREATE TABLE IF NOT EXISTS scopes ('
               'id INT,'
               'scope INT DEFAULT 0)')
