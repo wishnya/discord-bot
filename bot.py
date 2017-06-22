@@ -190,7 +190,7 @@ def setQuestion(qst='update'):
     line = text[numLine].rstrip().split('|')
     if qst == 'update':
         line.append(currentQuestion)
-    cursor.executemany(questions[qst], line)
+    cursor.executemany(questions[qst], *line)
     currentQuestion = line[0]
     currentAnswer = line[1]
     dbase.commit()
