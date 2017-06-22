@@ -24,11 +24,10 @@ dbase = psycopg2.connect(
     port=url.port
 )
 cursor = dbase.cursor()
+
 cursor.execute('CREATE TABLE IF NOT EXISTS quiz ('
               'question TEXT,'
               'ask TEXT)')
-
-
 
 cursor.execute('CREATE TABLE IF NOT EXISTS scopes ('
               'id INT,'
@@ -67,7 +66,6 @@ async def cat(msg):
     gif = requests.get('http://thecatapi.com/api/images/get').url
     await bot.send_message(msg.channel, gif)
 
-
 # Функция поиска по сайтам.
 async def search(msg, where):
     places = {
@@ -86,7 +84,6 @@ async def search(msg, where):
     else:
         quest = 'Вы не указали искомое.'
         await bot.send_message(msg.channel, quest)
-
 
 # Функция, посылающая вопрос в чат
 async def quiz(msg):
@@ -129,9 +126,7 @@ async def ask(msg):
         else:
             await bot.send_message(msg.channel, '{}, к сожалению это неправильный ответ.'.format(msg.author.mention))
 
-
 # Список из 10 лидеров викторины
-
 async def top(msg):
     cursor = dbase.cursor()
     cursor.execute('SELECT id, scope FROM scopes ORDER BY scope DESC LIMIT 30')
@@ -178,7 +173,7 @@ async def top(msg):
 def setQuestion(qst='update'):
     cursor = dbase.cursor()
     questions = {
-        'insert': 'INSERT INTO quiz(question, ask) VALUES(%s, %s)',
+        'insert': 'INSERT INTO quiz(question, ask) VALUES(%s)',
         'update': 'UPDATE quiz SET question = %s, ask = %s WHERE question = %s'
     }
     global currentQuestion
@@ -190,7 +185,8 @@ def setQuestion(qst='update'):
     line = text[numLine].rstrip().split('|')
     if qst == 'update':
         line.append(currentQuestion)
-    cursor.executemany(questions[qst], *line)
+    print(line)
+    cursor.executemany(questions[qst], line)
     currentQuestion = line[0]
     currentAnswer = line[1]
     dbase.commit()
