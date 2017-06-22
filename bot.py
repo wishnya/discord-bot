@@ -29,7 +29,7 @@ cursor.execute('CREATE TABLE IF NOT EXISTS quiz ('
               'ask TEXT)')
 
 cursor.execute('CREATE TABLE IF NOT EXISTS scopes ('
-              'id INT,'
+              'id BIGINT,'
               'scope INT DEFAULT 0)')
 
 
@@ -111,9 +111,9 @@ async def ask(msg):
             if scope is None:
                 usrScope = 1
                 cursor.execute('INSERT INTO scopes (id, scope) VALUES({}, {})'.format(id, usrScope))
+                print('UPDATE scopes SET scope = {} WHERE id = {}'.format(usrScope, id))
             else:
                 usrScope = scope[0] + 1
-                print('UPDATE scopes SET scope = {} WHERE id = {}'.format(usrScope, id))
                 cursor.execute('UPDATE scopes SET scope = {} WHERE id = {}'.format(usrScope, id))
             dbase.commit()
             cursor.close()
