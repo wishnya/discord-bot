@@ -110,7 +110,7 @@ async def ask(msg):
             scope = cursor.fetchone()
             if scope is None:
                 usrScope = 1
-                cursor.execute('''INSERT INTO scopes (id, scope) VALUES({}, {})'''.format(id, usrScope))
+                cursor.execute('INSERT INTO scopes (id, scope) VALUES({}, {})'.format(id, usrScope))
             else:
                 usrScope = scope[0] + 1
                 cursor.execute('UPDATE scopes SET scope = {} WHERE id = {}'.format(usrScope, id))
