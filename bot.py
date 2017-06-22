@@ -106,14 +106,14 @@ async def ask(msg):
             usrScope = 0
             id = msg.author.id
             cursor = dbase.cursor()
-            cursor.execute('SELECT scope FROM scopes WHERE id = ?', [id])
+            cursor.execute('SELECT scope FROM scopes WHERE id = {}'.format(id))
             scope = cursor.fetchone()
             if scope is None:
                 usrScope = 1
-                cursor.execute('INSERT INTO scopes (id, scope) VALUES(?, ?)', (id, usrScope))
+                cursor.execute('''INSERT INTO scopes (id, scope) VALUES({}, {})'''.format(id, usrScope))
             else:
                 usrScope = scope[0] + 1
-                cursor.execute('UPDATE scopes SET scope = ? WHERE id = ?', (usrScope, id))
+                cursor.execute('UPDATE scopes SET scope = {} WHERE id = {}'.format(usrScope, id))
             dbase.commit()
             cursor.close()
             setQuestion()
