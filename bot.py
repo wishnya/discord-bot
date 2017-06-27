@@ -24,10 +24,6 @@ dbase = psycopg2.connect(
 )
 cursor = dbase.cursor()
 
-cursor.execute('CREATE TABLE IF NOT EXISTS quiz ('
-              'question TEXT,'
-              'ask TEXT)')
-
 cursor.execute('CREATE TABLE IF NOT EXISTS scopes ('
               'id BIGINT,'
               'scope INT DEFAULT 0)')
@@ -37,6 +33,9 @@ cursor.execute('CREATE TABLE IF NOT EXISTS scopes ('
 # Переменные, содержащие вопрос и ответ.
 currentQuestion = False
 currentAnswer = False
+
+# Timer
+timer = False
 
 # Массив с доступными командами
 commands = ', '.join([
@@ -88,43 +87,63 @@ async def search(msg, where):
 
 # Функция, посылающая вопрос в чат
 async def quiz(msg):
-    if not currentQuestion:
-        setQuestion()
-        await bot.send_message(msg.channel, "А теперь вопрос: {}".format(currentQuestion))
+    if currentQuestion:
+        await bot.send_message(msg.channel, currentQuestion)
     else:
+        global timer
+        setQuestion()
+        loop = bot.loop
+        timer = loop.call_later(20, loop.create_task, noAsk(msg))
         await bot.send_message(msg.channel, currentQuestion)
 
 # Фукция принимающая ответ на текущий вопрос
 async def ask(msg):
-    answer = msg.content.split(' ')
-    answer.pop(0)
-    if len(answer) > 1:
-        await bot.send_message(msg.channel, '{}, ответ состоит из одного слова.'.format(msg.author.mention))
-    elif not len(answer):
-        await bot.send_message(msg.channel, '{}, Вы не указали ответ.'.format(msg.author.mention))
+    global currentAnswer
+    if not currentAnswer:
+        await bot.send_message(msg.channel,
+                               "Вопрос еще не был установлен. Для установки вопроса воспользуйтесь командой"
+                               " '!quiz'.")
     else:
-        global currentAnswer
-        if answer[0].lower() == currentAnswer:
-            usrScope = 0
-            id = msg.author.id
-            cursor = dbase.cursor()
-            cursor.execute('SELECT scope FROM scopes WHERE id = {}'.format(id))
-            scope = cursor.fetchone()
-            if scope is None:
-                usrScope = 1
-                cursor.execute('INSERT INTO scopes (id, scope) VALUES({}, {})'.format(id, usrScope))
-            else:
-                usrScope = scope[0] + 1
-                cursor.execute('UPDATE scopes SET scope = {} WHERE id = {}'.format(usrScope, id))
-            dbase.commit()
-            cursor.close()
-            setQuestion()
-            await bot.send_message(msg.channel, '{} правильно ответил(а) на вопрос и получаете 1 балл.\n'
-                                                'Теперь количество ваших баллов равняется {}.'.format(
-                msg.author.mention, usrScope))
-            await bot.send_message(msg.channel, 'А теперь новый вопрос: {}'.format(currentQuestion))
+        answer = msg.content.split(' ')
+        answer.pop(0)
+        if len(answer) > 1:
+            await bot.send_message(msg.channel, '{}, ответ состоит из одного слова.'.format(msg.author.mention))
+        elif not len(answer):
+            await bot.send_message(msg.channel, '{}, Вы не указали ответ.'.format(msg.author.mention))
         else:
-            await bot.send_message(msg.channel, '{}, к сожалению это неправильный ответ.'.format(msg.author.mention))
+            if answer[0].lower() == currentAnswer:
+                global currentQuestion
+                global timer
+                timer.cancel()
+                id = msg.author.id
+                cursor = dbase.cursor()
+                cursor.execute('SELECT scope FROM scopes WHERE id = {}'.format(id))
+                scope = cursor.fetchone()
+                if scope is None:
+                    usrScope = 1
+                    cursor.execute('INSERT INTO scopes (id, scope) VALUES({}, {})'.format(id, usrScope))
+                else:
+                    usrScope = scope[0] + 1
+                    cursor.execute('UPDATE scopes SET scope = {} WHERE id = {}'.format(usrScope, id))
+                dbase.commit()
+                cursor.close()
+                setQuestion()
+                await bot.send_message(msg.channel, '{} правильно ответил(а) на вопрос и получаете 1 балл.\n'
+                                                    'Теперь количество ваших баллов равняется {}.'.format(
+                    msg.author.mention, usrScope))
+                currentQuestion = False
+                currentAnswer = False
+            else:
+                await bot.send_message(msg.channel, '{}, к сожалению это неправильный ответ.'.format(msg.author.mention))
+
+# Функция, действующая в том случае, если не было правильного ответа
+async def noAsk(msg):
+    global currentAnswer
+    global currentQuestion
+    await bot.send_message(msg.channel, "К сожалению, никто не назвал правильный ответ."
+                                        "\nПравильным ответом было слово '{}'".format(currentAnswer))
+    currentQuestion = False
+    currentAnswer = False
 
 # Список из 10 лидеров викторины
 async def top(msg):
@@ -169,12 +188,8 @@ async def top(msg):
 
 # Функция, которая выбирает случайный вопрос и ответ из текстового файла, а затем записывает выбранное
 # в базу данных и переменные для вопроса и ответа.
-def setQuestion(qst='update'):
+def setQuestion():
     cursor = dbase.cursor()
-    questions = {
-        'insert': '''INSERT INTO quiz (question, ask) VALUES('{}', '{}')''',
-        'update': '''UPDATE quiz SET question = '{}', ask = '{}' WHERE question = '{}' '''
-    }
     global currentQuestion
     global currentAnswer
     file = open(os.path.dirname(os.path.abspath(__file__)) + os.sep + 'questions.txt', 'r', encoding='utf-8')
@@ -182,9 +197,7 @@ def setQuestion(qst='update'):
     countLines = len(text)
     numLine = random.randrange(countLines)
     line = text[numLine].rstrip().split('|')
-    if qst == 'update':
-        line.append(currentQuestion)
-    cursor.execute(questions[qst].format(*line))
+    cursor.execute('''INSERT INTO quiz (question, ask) VALUES('{}', '{}')'''.format(*line))
     currentQuestion = line[0]
     currentAnswer = line[1]
     dbase.commit()
@@ -216,19 +229,5 @@ async def on_message(msg):
         elif msg.content.startswith('!top'):
             await top(msg)
 
-
-if __name__ == '__main__':
-    # Отправка запроса для получения вопроса и ответа в базе данных. Если они(вопрос и ответ) есть,
-    # то записываются в соотвествующие переменные, если нет - запускается функция setQuestion,
-    # берущая случайный вопрос и ответ из текстового файл и добавляет их в базу
-    cursor.execute('SELECT question, ask FROM quiz')
-    quizData = cursor.fetchall()
-    if quizData:
-        currentQuestion = quizData[0][0]
-        currentAnswer = quizData[0][1]
-        cursor.close()
-    else:
-        setQuestion('insert')
-
-    # Запуск бота
-    bot.run('MzI0MjU1MDEzNTk5NzA3MTM2.DCw-CA.aOHfh4nBQOqY-lCI2fYevvlkxug')
+# Запуск бота
+bot.run('MzI0MjU1MDEzNTk5NzA3MTM2.DCw-CA.aOHfh4nBQOqY-lCI2fYevvlkxug')
