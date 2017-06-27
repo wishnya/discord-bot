@@ -88,7 +88,7 @@ async def search(msg, where):
 # Функция, посылающая вопрос в чат
 async def quiz(msg):
     if currentQuestion:
-        await bot.send_message(msg.channel, currentQuestion)
+        await bot.send_message(msg.channel, 'test')
     else:
         global timer
         setQuestion()
