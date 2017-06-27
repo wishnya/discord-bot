@@ -88,13 +88,13 @@ async def search(msg, where):
 # Функция, посылающая вопрос в чат
 async def quiz(msg):
     if currentQuestion:
-        await bot.send_message(msg.channel, 'test')
+        await bot.send_message(msg.channel, currentQuestion)
     else:
         global timer
         setQuestion()
         loop = bot.loop
         timer = loop.call_later(20, loop.create_task, noAsk(msg))
-        await bot.send_message(msg.channel, currentQuestion)
+        await bot.send_message(msg.channel, 'test')
 
 # Фукция принимающая ответ на текущий вопрос
 async def ask(msg):
