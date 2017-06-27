@@ -188,11 +188,10 @@ async def top(msg):
 
 # Функция, которая выбирает случайный вопрос и ответ из текстового файла, а затем записывает выбранное
 # в базу данных и переменные для вопроса и ответа.
-
 def setQuestion():
-    cursor = dbase.cursor()
     global currentQuestion
     global currentAnswer
+    cursor = dbase.cursor()
     file = open(os.path.dirname(os.path.abspath(__file__)) + os.sep + 'questions.txt', 'r', encoding='utf-8')
     text = file.readlines()
     countLines = len(text)
@@ -201,6 +200,7 @@ def setQuestion():
     cursor.execute('''INSERT INTO quiz (question, ask) VALUES('{}', '{}')'''.format(*line))
     currentQuestion = line[0]
     currentAnswer = line[1]
+    print(currentQuestion, currentAnswer)
     dbase.commit()
     cursor.close()
 
