@@ -94,7 +94,7 @@ async def quiz(msg):
         setQuestion()
         loop = bot.loop
         timer = loop.call_later(20, loop.create_task, noAsk(msg))
-        await bot.send_message(msg.channel, 'test')
+        await bot.send_message(msg.channel, currentQuestion)
 
 # Фукция принимающая ответ на текущий вопрос
 async def ask(msg):
@@ -222,7 +222,7 @@ async def on_message(msg):
             await search(msg, 'python')
 
         elif msg.content.startswith('!quiz'):
-            await bot.send_message(msg.channel, currentQuestion)
+            await quiz(msg)
 
         elif msg.content.startswith('!ask'):
             await ask(msg)
