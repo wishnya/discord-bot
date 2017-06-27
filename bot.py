@@ -28,8 +28,6 @@ cursor.execute('CREATE TABLE IF NOT EXISTS scopes ('
               'id BIGINT,'
               'scope INT DEFAULT 0)')
 
-
-
 # Переменные, содержащие вопрос и ответ.
 currentQuestion = False
 currentAnswer = False
@@ -39,6 +37,7 @@ timer = False
 
 # Массив с доступными командами
 commands = ', '.join([
+    'top',
     'cat',
     'wiki',
     'python',
@@ -200,7 +199,6 @@ def setQuestion():
     cursor.execute('''INSERT INTO quiz (question, ask) VALUES('{}', '{}')'''.format(*line))
     currentQuestion = line[0]
     currentAnswer = line[1]
-    print(currentQuestion, currentAnswer)
     dbase.commit()
     cursor.close()
 
