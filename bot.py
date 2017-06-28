@@ -92,7 +92,7 @@ async def quiz(msg):
         global timer
         setQuestion()
         loop = bot.loop
-        timer = loop.call_later(60, loop.create_task, noAsk(msg))
+        timer = loop.call_later(30, loop.create_task, noAsk(msg))
         await bot.send_message(msg.channel, currentQuestion)
         await openSymbol(msg)
 
@@ -141,7 +141,7 @@ async def noAsk(msg):
 async def openSymbol(msg):
     global currentAnswer
     lenght = len(currentAnswer)
-    timeOpenSymbol = 60 / lenght
+    timeOpenSymbol = 30 / lenght
     for i in range(lenght):
         if currentAnswer:
             await bot.send_message(msg.channel, currentAnswer[:i] + ((lenght - i) * '-'))
