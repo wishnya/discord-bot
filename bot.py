@@ -92,7 +92,7 @@ async def quiz(msg):
         global timer
         setQuestion()
         loop = bot.loop
-        timer = loop.call_later(20, loop.create_task, noAsk(msg))
+        timer = loop.call_later(60, loop.create_task, noAsk(msg))
         await bot.send_message(msg.channel, currentQuestion)
         await openSymbol(msg)
 
