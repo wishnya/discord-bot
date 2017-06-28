@@ -42,8 +42,8 @@ commands = ', '.join([
     'cat',
     'wiki',
     'python',
-    'quiz',
-    'ask'
+    'в на русской раскладке',
+    'а на русской раскладке.'
 ])
 
 # Массив с эможи в качестве обозначения места в викторине.
@@ -106,10 +106,8 @@ async def ask(msg):
     else:
         answer = msg.content.split(' ')
         answer.pop(0)
-        if len(answer) > 1:
-            await bot.send_message(msg.channel, '{}, ответ состоит из одного слова.'.format(msg.author.mention))
-        elif not len(answer):
-            await bot.send_message(msg.channel, '{}, Вы не указали ответ.'.format(msg.author.mention))
+        if len(answer) > 1 or not len(answer):
+            pass
         else:
             if answer[0].lower() == currentAnswer:
                 global currentQuestion
@@ -229,10 +227,10 @@ async def on_message(msg):
         elif msg.content.startswith('!python'):
             await search(msg, 'python')
 
-        elif msg.content.startswith('!quiz'):
+        elif msg.content.startswith('!в'):
             await quiz(msg)
 
-        elif msg.content.startswith('!ask'):
+        elif msg.content.startswith('!а'):
             await ask(msg)
 
         elif msg.content.startswith('!top'):
