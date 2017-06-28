@@ -4,6 +4,7 @@ import os
 import requests
 import psycopg2
 import urllib.parse as urlparse
+from asyncio import sleep
 
 bot = discord.Client()
 
@@ -59,7 +60,6 @@ places = [
     ':ten:'
 ]
 
-
 # Функция, отправляющая случайное изображение кошек
 async def cat(msg):
     gif = requests.get('http://thecatapi.com/api/images/get').url
@@ -94,6 +94,7 @@ async def quiz(msg):
         loop = bot.loop
         timer = loop.call_later(20, loop.create_task, noAsk(msg))
         await bot.send_message(msg.channel, currentQuestion)
+        await openSymbol(msg)
 
 # Фукция принимающая ответ на текущий вопрос
 async def ask(msg):
@@ -143,6 +144,16 @@ async def noAsk(msg):
                                         "\nПравильным ответом было слово '{}'".format(currentAnswer))
     currentQuestion = False
     currentAnswer = False
+
+# Открытие букв в слове, являющимся ответом на вопрос
+async def openSymbol(msg):
+    global currentAnswer
+    lenght = len(currentAnswer)
+    timeOpenSymbol = 20 / lenght
+    for i in range(lenght):
+        if currentAnswer:
+            await bot.send_message(msg.channel, currentAnswer[:i] + ((lenght - i) * '-'))
+            await sleep(timeOpenSymbol)
 
 # Список из 10 лидеров викторины
 async def top(msg):
@@ -201,7 +212,6 @@ def setQuestion():
     currentAnswer = line[1]
     dbase.commit()
     cursor.close()
-
 
 # Функция обработки команд в чате.
 @bot.event
