@@ -106,11 +106,10 @@ async def ask(msg):
     else:
         answer = msg.content.split()
         if answer[0].lower() == currentAnswer:
-            currentAnswer = False
+            global currentQuestion
             global timer
             timer.cancel()
-            global currentQuestion
-            currentQuestion = False
+            timer = None
             id = msg.author.id
             cursor = dbase.cursor()
             cursor.execute('SELECT scope FROM scopes WHERE id = {}'.format(id))
@@ -123,7 +122,8 @@ async def ask(msg):
                 cursor.execute('UPDATE scopes SET scope = {} WHERE id = {}'.format(usrScope, id))
             dbase.commit()
             cursor.close()
-            setQuestion()
+            currentAnswer = False
+            currentQuestion = False
             await bot.send_message(msg.channel, '{} правильно ответил(а) на вопрос и получаете 1 балл.\n'
                                                 'Теперь количество ваших баллов равняется {}.'.format(
                 msg.author.mention, usrScope))
