@@ -102,7 +102,7 @@ async def ask(msg):
     if not currentAnswer:
         await bot.send_message(msg.channel,
                                "Вопрос еще не был установлен. Для установки вопроса воспользуйтесь командой"
-                               " '!quiz'.")
+                               " '!в'.")
     else:
         answer = msg.content.split(' ')
         answer.pop(0)
