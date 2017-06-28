@@ -131,8 +131,6 @@ async def ask(msg):
                     msg.author.mention, usrScope))
                 currentQuestion = False
                 currentAnswer = False
-            else:
-                await bot.send_message(msg.channel, '{}, к сожалению это неправильный ответ.'.format(msg.author.mention))
 
 # Функция, действующая в том случае, если не было правильного ответа
 async def noAsk(msg):
