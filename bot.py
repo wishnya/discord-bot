@@ -149,7 +149,7 @@ async def noAsk(msg):
 async def openSymbol(msg):
     global currentAnswer
     lenght = len(currentAnswer)
-    timeOpenSymbol = 20 / lenght
+    timeOpenSymbol = 60 / lenght
     for i in range(lenght):
         if currentAnswer:
             await bot.send_message(msg.channel, currentAnswer[:i] + ((lenght - i) * '-'))
