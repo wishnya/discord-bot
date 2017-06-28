@@ -104,33 +104,29 @@ async def ask(msg):
                                "Вопрос еще не был установлен. Для установки вопроса воспользуйтесь командой"
                                " '!в'.")
     else:
-        answer = msg.content.split(' ')
-        answer.pop(0)
-        if len(answer) > 1 or not len(answer):
-            pass
-        else:
-            if answer[0].lower() == currentAnswer:
-                global currentQuestion
-                global timer
-                timer.cancel()
-                id = msg.author.id
-                cursor = dbase.cursor()
-                cursor.execute('SELECT scope FROM scopes WHERE id = {}'.format(id))
-                scope = cursor.fetchone()
-                if scope is None:
-                    usrScope = 1
-                    cursor.execute('INSERT INTO scopes (id, scope) VALUES({}, {})'.format(id, usrScope))
-                else:
-                    usrScope = scope[0] + 1
-                    cursor.execute('UPDATE scopes SET scope = {} WHERE id = {}'.format(usrScope, id))
-                dbase.commit()
-                cursor.close()
-                setQuestion()
-                await bot.send_message(msg.channel, '{} правильно ответил(а) на вопрос и получаете 1 балл.\n'
-                                                    'Теперь количество ваших баллов равняется {}.'.format(
-                    msg.author.mention, usrScope))
-                currentQuestion = False
-                currentAnswer = False
+        answer = msg.content.split()
+        if answer[0].lower() == currentAnswer:
+            currentAnswer = False
+            global timer
+            timer.cancel()
+            global currentQuestion
+            currentQuestion = False
+            id = msg.author.id
+            cursor = dbase.cursor()
+            cursor.execute('SELECT scope FROM scopes WHERE id = {}'.format(id))
+            scope = cursor.fetchone()
+            if scope is None:
+                usrScope = 1
+                cursor.execute('INSERT INTO scopes (id, scope) VALUES({}, {})'.format(id, usrScope))
+            else:
+                usrScope = scope[0] + 1
+                cursor.execute('UPDATE scopes SET scope = {} WHERE id = {}'.format(usrScope, id))
+            dbase.commit()
+            cursor.close()
+            setQuestion()
+            await bot.send_message(msg.channel, '{} правильно ответил(а) на вопрос и получаете 1 балл.\n'
+                                                'Теперь количество ваших баллов равняется {}.'.format(
+                msg.author.mention, usrScope))
 
 # Функция, действующая в том случае, если не было правильного ответа
 async def noAsk(msg):
@@ -228,7 +224,7 @@ async def on_message(msg):
         elif msg.content.startswith('!в'):
             await quiz(msg)
 
-        elif msg.content.startswith('!а'):
+        elif not msg.author.bot and currentAnswer and len(msg.content.split()) == 1:
             await ask(msg)
 
         elif msg.content.startswith('!top'):
