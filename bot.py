@@ -141,7 +141,7 @@ async def noAsk(msg):
     global currentAnswer
     global currentQuestion
     await bot.send_message(msg.channel, "К сожалению, никто не назвал правильный ответ."
-                                        "\nПравильным ответом было слово '{}'".format(currentAnswer))
+                                        "\nПравильным ответом было слово '{}'.".format(currentAnswer))
     currentQuestion = False
     currentAnswer = False
 
