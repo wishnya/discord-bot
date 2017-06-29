@@ -142,14 +142,13 @@ async def noAsk(msg):
 
 # Открытие букв в слове, являющимся ответом на вопрос
 async def openSymbol(msg):
-    async def openSymbol(msg):
-        lenght = len(currentAnswer)
-        part = round(lenght / 3)
-        timeOpenSymbol = timeOnAsk / 3
-        for i in range(part + 1):
-            if currentAnswer:
-                await bot.send_message(msg.channel, currentAnswer[:i * part] + (lenght - (i * part)) * '-')
-                await sleep(timeOpenSymbol)
+    lenght = len(currentAnswer)
+    part = round(lenght / 3)
+    timeOpenSymbol = timeOnAsk / 3
+    for i in range(part + 1):
+        if currentAnswer:
+            await bot.send_message(msg.channel, currentAnswer[:i * part] + (lenght - (i * part)) * '-')
+            await sleep(timeOpenSymbol)
 
 # Список из 10 лидеров викторины
 async def top(msg):
