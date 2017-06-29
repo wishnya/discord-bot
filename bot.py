@@ -36,6 +36,9 @@ currentAnswer = False
 # Timer
 timer = False
 
+# Время на один вопрос
+timeOnAsk = 20
+
 # Массив с доступными командами
 commands = '\n'.join([
     '!top -  вывести топ-10 местных эрудитов.',
@@ -139,13 +142,14 @@ async def noAsk(msg):
 
 # Открытие букв в слове, являющимся ответом на вопрос
 async def openSymbol(msg):
-    global currentAnswer
-    lenght = len(currentAnswer)
-    timeOpenSymbol = 20 / lenght
-    for i in range(lenght):
-        if currentAnswer:
-            await bot.send_message(msg.channel, currentAnswer[:i] + ((lenght - i) * '-'))
-            await sleep(timeOpenSymbol)
+    async def openSymbol(msg):
+        lenght = len(currentAnswer)
+        part = round(lenght / 3)
+        timeOpenSymbol = timeOnAsk / 3
+        for i in range(part + 1):
+            if currentAnswer:
+                await bot.send_message(msg.channel, currentAnswer[:i * part] + (lenght - (i * part)) * '-')
+                await sleep(timeOpenSymbol)
 
 # Список из 10 лидеров викторины
 async def top(msg):
