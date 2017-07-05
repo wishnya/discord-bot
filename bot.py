@@ -95,11 +95,13 @@ async def quiz(msg):
         global timer
         count = 1
         textlist = msg.content.split(' ')
-        if len(textlist) == 2:
+        if len(textlist) == 2 and msg.channel == 'quiz':
             try:
                 count = int(textlist[1])
             except ValueError:
                 count = 0
+        else:
+            count = 0
         for i in range(count):
             setQuestion()
             timer = bot.loop.call_later(timeOnAsk, bot.loop.create_task, noAsk(msg))
