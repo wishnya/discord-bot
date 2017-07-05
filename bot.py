@@ -40,7 +40,7 @@ timer = False
 timeOnAsk = 20
 
 # Сигнал на остановку викторины
-stopSignal = True
+stopSignal = False
 
 # Массив с доступными командами
 commands = '\n'.join([
@@ -99,29 +99,27 @@ async def quiz(msg):
         global stopSignal
         count = 1
         textlist = msg.content.split(' ')
-        if msg.channel.name == 'quiz':
+        if msg.channel.name == 'general':
             if len(textlist) == 2:
                 try:
                     count = int(textlist[1])
-                    stopSignal = False
+                    stopSignal = True
                 except ValueError:
                     count = 0
         else:
             if len(textlist) != 1:
                 count = 0
             else:
-                stopSignal = False
+                stopSignal = True
 
         for i in range(count):
-            if not stopSignal:
+            if stopSignal:
                 setQuestion()
                 timer = bot.loop.call_later(timeOnAsk, bot.loop.create_task, noAsk(msg))
                 await bot.send_message(msg.channel, currentQuestion)
                 await openSymbol(msg)
-            else:
-                count = 0
 
-        stopSignal = True
+        stopSignal = False
 
 # Фукция принимающая ответ на текущий вопрос
 async def ask(msg):
@@ -252,12 +250,12 @@ async def on_message(msg):
         elif text == '!в':
             await quiz(msg)
 
-        elif not msg.author.bot and currentAnswer and len(msg.content.split()) == 1:
-            await ask(msg)
-
         elif msg.channel.name == 'quiz' and text == '!stop':
             global stopSignal
-            stopSignal = True
+            stopSignal = False
+
+        elif not msg.author.bot and currentAnswer and len(msg.content.split()) == 1:
+            await ask(msg)
 
         elif text == '!top':
             await top(msg)
