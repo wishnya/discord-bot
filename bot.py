@@ -113,7 +113,7 @@ async def quiz(msg):
                 stopSignal = False
 
         for i in range(count):
-            if stopSignal:
+            if not stopSignal:
                 setQuestion()
                 timer = bot.loop.call_later(timeOnAsk, bot.loop.create_task, noAsk(msg))
                 await bot.send_message(msg.channel, currentQuestion)
