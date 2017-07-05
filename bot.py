@@ -39,6 +39,8 @@ timer = False
 # Время на один вопрос
 timeOnAsk = 20
 
+# Количество вопросов
+totalQuestions = 1
 # Массив с доступными командами
 commands = '\n'.join([
     '!top -  вывести топ-10 местных эрудитов.',
@@ -93,19 +95,20 @@ async def quiz(msg):
         await bot.send_message(msg.channel, currentQuestion)
     else:
         global timer
-        count = 1
+        global totalQuestions
+        totalQuestions = 1
         textlist = msg.content.split(' ')
         if msg.channel.name == 'quiz':
             if len(textlist) == 2:
                 try:
-                    count = int(textlist[1])
+                    totalQuestions = int(textlist[1])
                 except ValueError:
-                    count = 0
+                    totalQuestions = 0
         else:
             if len(textlist) != 1:
-                count = 0
+                totalQuestions = 0
 
-        for i in range(count):
+        for i in range(totalQuestions):
             setQuestion()
             timer = bot.loop.call_later(timeOnAsk, bot.loop.create_task, noAsk(msg))
             await bot.send_message(msg.channel, currentQuestion)
@@ -161,6 +164,11 @@ async def openSymbol(msg):
         if currentAnswer:
             await bot.send_message(msg.channel, currentAnswer[:i * part] + (lenght - (i * part)) * '-')
             await sleep(timeOpenSymbol)
+
+# Остановка викторины
+async def stop():
+    global totalQuestions
+    totalQuestions = 0
 
 # Список из 10 лидеров викторины
 async def top(msg):
@@ -242,6 +250,9 @@ async def on_message(msg):
 
         elif not msg.author.bot and currentAnswer and len(msg.content.split()) == 1:
             await ask(msg)
+
+        elif msg.channel.name == 'quiz' and text == '!stop':
+            await stop()
 
         elif text == '!top':
             await top(msg)
