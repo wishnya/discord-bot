@@ -93,11 +93,18 @@ async def quiz(msg):
         await bot.send_message(msg.channel, currentQuestion)
     else:
         global timer
-        setQuestion()
-        loop = bot.loop
-        timer = loop.call_later(20, loop.create_task, noAsk(msg))
-        await bot.send_message(msg.channel, currentQuestion)
-        await openSymbol(msg)
+        count = 1
+        textlist = msg.content.split(' ')
+        if len(textlist) == 2:
+            try:
+                count = int(textlist[1])
+            except ValueError:
+                count = 0
+        for i in range(count):
+            setQuestion()
+            timer = bot.loop.call_later(timeOnAsk, bot.loop.create_task, noAsk(msg))
+            await bot.send_message(msg.channel, currentQuestion)
+            await openSymbol(msg)
 
 # Фукция принимающая ответ на текущий вопрос
 async def ask(msg):
