@@ -95,11 +95,16 @@ async def quiz(msg):
         global timer
         count = 1
         textlist = msg.content.split(' ')
-        if len(textlist) == 2:
-            try:
-                count = int(textlist[1])
-            except ValueError:
+        if msg.channel.name == 'quiz':
+            if len(textlist) == 2:
+                try:
+                    count = int(textlist[1])
+                except ValueError:
+                    count = 0
+        else:
+            if len(textlist) != 1:
                 count = 0
+
         for i in range(count):
             setQuestion()
             timer = bot.loop.call_later(timeOnAsk, bot.loop.create_task, noAsk(msg))
@@ -219,25 +224,26 @@ def setQuestion():
 @bot.event
 async def on_message(msg):
     if bot.user.id != msg.author.id:
-        if msg.content.startswith('!help'):
+        text = msg.content.split(' ')[0]
+        if text == '!help':
             await bot.send_message(msg.channel, commands)
 
-        elif msg.content.startswith('!cat'):
+        elif text == '!cat':
             await cat(msg)
 
-        elif msg.content.startswith('!wiki'):
+        elif text == '!wiki':
             await search(msg, 'wiki')
 
-        elif msg.content.startswith('!python'):
+        elif text == '!python':
             await search(msg, 'python')
 
-        elif msg.content.startswith('!в'):
+        elif text == '!в':
             await quiz(msg)
 
         elif not msg.author.bot and currentAnswer and len(msg.content.split()) == 1:
             await ask(msg)
 
-        elif msg.content.startswith('!top'):
+        elif text == '!top':
             await top(msg)
 
 # Запуск бота
