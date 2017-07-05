@@ -99,7 +99,7 @@ async def quiz(msg):
         global stopSignal
         count = 1
         textlist = msg.content.split(' ')
-        if msg.channel.name == 'general':
+        if msg.channel.name == 'quiz':
             if len(textlist) == 2:
                 try:
                     count = int(textlist[1])
@@ -254,11 +254,11 @@ async def on_message(msg):
             global stopSignal
             stopSignal = False
 
-        elif not msg.author.bot and currentAnswer and len(msg.content.split()) == 1:
-            await ask(msg)
-
         elif text == '!top':
             await top(msg)
+
+        elif not msg.author.bot and currentAnswer and len(msg.content.split()) == 1:
+            await ask(msg)
 
 # Запуск бота
 bot.run('MzI0MjU1MDEzNTk5NzA3MTM2.DCw-CA.aOHfh4nBQOqY-lCI2fYevvlkxug')
