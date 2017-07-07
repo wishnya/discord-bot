@@ -30,8 +30,8 @@ cursor.execute('CREATE TABLE IF NOT EXISTS scopes ('
               'scope INT DEFAULT 0)')
 
 # Переменные, содержащие вопрос и ответ.
-currentQuestion = False
-currentAnswer = False
+# Перменные, содержащие вопрос и ответ.
+channelsQuestions = {}
 
 # Timer
 timer = False
@@ -92,8 +92,12 @@ async def search(msg, where):
 
 # Функция, посылающая вопрос в чат
 async def quiz(msg):
-    if currentQuestion:
-        await bot.send_message(msg.channel, currentQuestion)
+    chl = msg.channel.name
+    if chl not in channelsQuestions:
+
+        channelsQuestions[chl] = [False, False]
+    if channelsQuestions[chl][0]:
+        await bot.send_message(msg.channel, channelsQuestions[chl][0])
     else:
         global timer
         global stopSignal
@@ -114,24 +118,21 @@ async def quiz(msg):
 
         for i in range(count):
             if stopSignal:
-                setQuestion()
+                setQuestion(channelsQuestions[chl])
                 timer = bot.loop.call_later(timeOnAsk, bot.loop.create_task, noAsk(msg))
-                await bot.send_message(msg.channel, currentQuestion)
+                await bot.send_message(msg.channel, channelsQuestions[chl][0])
                 await openSymbol(msg)
 
         stopSignal = False
 
 # Фукция принимающая ответ на текущий вопрос
 async def ask(msg):
-    global currentAnswer
-    if not currentAnswer:
-        await bot.send_message(msg.channel,
-                               "Вопрос еще не был установлен. Для установки вопроса воспользуйтесь командой"
-                               " '!в'.")
+    if not channelsQuestions[msg.channel.name][1]:
+        await bot.send_message(msg.channel, "Вопрос еще не был установлен. Для установки вопроса воспользуйтесь командой"
+                                            " '!quiz'.")
     else:
         answer = msg.content.split()
-        if answer[0].lower() == currentAnswer:
-            global currentQuestion
+        if answer[0].lower() == channelsQuestions[msg.channel.name][1]:
             global timer
             timer.cancel()
             timer = None
@@ -147,29 +148,30 @@ async def ask(msg):
                 cursor.execute('UPDATE scopes SET scope = {} WHERE id = {}'.format(usrScope, id))
             dbase.commit()
             cursor.close()
-            currentAnswer = False
-            currentQuestion = False
             await bot.send_message(msg.channel, '{} правильно ответил(а) на вопрос и получаете 1 балл.\n'
-                                                'Теперь количество ваших баллов равняется {}.'.format(
-                msg.author.mention, usrScope))
+                                                'Теперь количество ваших очков равняется {}.'.format(msg.author.mention,
+                                                                                                     usrScope))
+            channelsQuestions[msg.channel.name][0] = False
+            channelsQuestions[msg.channel.name][1] = False
+        else:
+            await bot.send_message(msg.channel, '{}, к сожалению это неправильный ответ.'.format(msg.author.mention))
 
 # Функция, действующая в том случае, если не было правильного ответа
 async def noAsk(msg):
-    global currentAnswer
-    global currentQuestion
     await bot.send_message(msg.channel, "К сожалению, никто не назвал правильный ответ."
-                                        "\nПравильным ответом было слово '{}'.".format(currentAnswer))
-    currentQuestion = False
-    currentAnswer = False
+                                        "\nПравильным ответом было слово '{}'".format(channelsQuestions[msg.channel.name][1]))
+    channelsQuestions[msg.channel.name][0] = False
+    channelsQuestions[msg.channel.name][1] = False
 
 # Открытие букв в слове, являющимся ответом на вопрос
 async def openSymbol(msg):
-    lenght = len(currentAnswer)
+    lenght = len(channelsQuestions[msg.channel.name][1])
     part = round(lenght / 3)
     timeOpenSymbol = timeOnAsk / 3
     for i in range(part + 1):
-        if currentAnswer:
-            await bot.send_message(msg.channel, currentAnswer[:i * part] + (lenght - (i * part)) * '-')
+        if channelsQuestions[msg.channel.name][1]:
+            await bot.send_message(msg.channel,
+                                   channelsQuestions[msg.channel.name][1][:i * part] + (lenght - (i * part)) * '-')
             await sleep(timeOpenSymbol)
 
 # Список из 10 лидеров викторины
@@ -215,20 +217,14 @@ async def top(msg):
 
 # Функция, которая выбирает случайный вопрос и ответ из текстового файла, а затем записывает выбранное
 # в базу данных и переменные для вопроса и ответа.
-def setQuestion():
-    global currentQuestion
-    global currentAnswer
-    cursor = dbase.cursor()
+def setQuestion(place):
     file = open(os.path.dirname(os.path.abspath(__file__)) + os.sep + 'questions.txt', 'r', encoding='utf-8')
     text = file.readlines()
     countLines = len(text)
     numLine = random.randrange(countLines)
     line = text[numLine].rstrip().split('|')
-    cursor.execute('''INSERT INTO quiz (question, ask) VALUES('{}', '{}')'''.format(*line))
-    currentQuestion = line[0]
-    currentAnswer = line[1]
-    dbase.commit()
-    cursor.close()
+    place[0], place[1] = line[0], line[1]
+    print(place[1])
 
 # Функция обработки команд в чате.
 @bot.event
@@ -257,7 +253,7 @@ async def on_message(msg):
         elif text == '!top':
             await top(msg)
 
-        elif not msg.author.bot and currentAnswer and len(msg.content.split()) == 1:
+        elif not msg.author.bot and channelsQuestions[msg.channel.name][1] and len(msg.content.split()) == 1:
             await ask(msg)
 
 # Запуск бота
