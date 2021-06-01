@@ -7,7 +7,7 @@ idna==2.5
 multidict==2.1.6
 requests==2.18.1
 sip==4.19.2
-urllib3==1.21.1
+urllib3==1.26.5
 virtualenv==15.1.0
 websockets==3.3
 psycopg2==2.7.1
