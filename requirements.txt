@@ -9,5 +9,5 @@ requests==2.18.1
 sip==4.19.2
 urllib3==1.21.1
 virtualenv==15.1.0
-websockets==3.3
+websockets==9.1
 psycopg2==2.7.1
